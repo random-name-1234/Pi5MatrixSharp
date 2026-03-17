@@ -1,0 +1,65 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Package version to publish
+        required: true
+        default: 0.1.0-preview.1
+  release:
+    types:
+      - published
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Resolve Version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "value=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore
+        run: dotnet restore Pi5MatrixSharp.slnx
+
+      - name: Build
+        run: dotnet build Pi5MatrixSharp.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test Pi5MatrixSharp.slnx -c Release --no-build
+
+      - name: Pack
+        run: dotnet pack src/Pi5MatrixSharp/Pi5MatrixSharp.csproj -c Release --no-build -o artifacts/nuget -p:Version=${{ steps.version.outputs.value }}
+
+      - name: Upload Release Asset
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${GITHUB_REF_NAME}" artifacts/nuget/*.nupkg --clobber
+
+      - name: Publish To NuGet
+        if: ${{ secrets.NUGET_API_KEY != '' }}
+        run: dotnet nuget push artifacts/nuget/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Warn If NuGet Publish Was Skipped
+        if: ${{ secrets.NUGET_API_KEY == '' }}
+        run: echo "NUGET_API_KEY is not configured, so NuGet publish was skipped."
