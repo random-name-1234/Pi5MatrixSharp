@@ -13,12 +13,14 @@ It is aimed at the "keep my app in C#" case: render however you like in managed 
 
 ## Install
 
-The package is prepared for NuGet, but until it is published you should use the `.nupkg` attached to the latest GitHub release or build one locally with `./scripts/pack.sh`.
-
-Once published to NuGet, installation will be:
-
 ```bash
 dotnet add package Pi5MatrixSharp
+```
+
+Package page:
+
+```text
+https://www.nuget.org/packages/Pi5MatrixSharp/
 ```
 
 ## Quick Start
@@ -96,7 +98,7 @@ The intended release flow is:
 1. Build and test with `./scripts/pack.sh`
 2. Create a Git tag such as `v0.1.0-preview.1`
 3. Publish a GitHub release and attach the generated `.nupkg`
-4. Push the same package to NuGet once a `NUGET_API_KEY` repo secret is configured
+4. Push the same package to NuGet using the `NUGET_API_KEY` repo secret
 
 ## License
 
