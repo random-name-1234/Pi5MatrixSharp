@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <AssemblyName>Pi5MatrixSharp</AssemblyName>
+    <RootNamespace>Pi5MatrixSharp</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>Pi5MatrixSharp</PackageId>
+    <Version>0.1.0-preview.1</Version>
+    <Authors>Alan Smith</Authors>
+    <Description>C# bindings for driving HUB75 RGB matrix panels on Raspberry Pi 5 using Adafruit's Piomatter backend.</Description>
+    <PackageTags>raspberry-pi;raspberry-pi-5;hub75;led-matrix;piomatter</PackageTags>
+    <PackageLicenseExpression>GPL-2.0-only</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/random-name-1234/Pi5MatrixSharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/random-name-1234/Pi5MatrixSharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath=""/>
+    <Content Include="..\..\runtimes\linux-arm64\native\libpi5matrix.so"
+             Link="runtimes/linux-arm64/native/libpi5matrix.so"
+             CopyToOutputDirectory="PreserveNewest"
+             Pack="true"
+             PackagePath="runtimes/linux-arm64/native/"/>
+  </ItemGroup>
+
+</Project>
