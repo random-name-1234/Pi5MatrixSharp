@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
     steps:
       - name: Checkout
@@ -57,9 +59,9 @@ jobs:
         run: gh release upload "${GITHUB_REF_NAME}" artifacts/nuget/*.nupkg --clobber
 
       - name: Publish To NuGet
-        if: ${{ secrets.NUGET_API_KEY != '' }}
-        run: dotnet nuget push artifacts/nuget/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        if: ${{ env.NUGET_API_KEY != '' }}
+        run: dotnet nuget push artifacts/nuget/*.nupkg --api-key "${NUGET_API_KEY}" --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Warn If NuGet Publish Was Skipped
-        if: ${{ secrets.NUGET_API_KEY == '' }}
+        if: ${{ env.NUGET_API_KEY == '' }}
         run: echo "NUGET_API_KEY is not configured, so NuGet publish was skipped."
