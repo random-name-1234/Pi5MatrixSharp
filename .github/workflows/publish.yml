@@ -6,7 +6,7 @@ on:
       version:
         description: Package version to publish
         required: true
-        default: 0.1.0-preview.1
+        default: 0.1.0
   release:
     types:
       - published
@@ -21,10 +21,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
             8.0.x

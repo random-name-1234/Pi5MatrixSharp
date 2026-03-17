@@ -1,4 +1,11 @@
+![Pi5MatrixSharp logo](https://raw.githubusercontent.com/random-name-1234/Pi5MatrixSharp/main/assets/pi5matrixsharp-logo.svg)
+
 # Pi5MatrixSharp
+
+[![CI](https://github.com/random-name-1234/Pi5MatrixSharp/actions/workflows/ci.yml/badge.svg)](https://github.com/random-name-1234/Pi5MatrixSharp/actions/workflows/ci.yml)
+[![NuGet](https://img.shields.io/nuget/v/Pi5MatrixSharp)](https://www.nuget.org/packages/Pi5MatrixSharp/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Pi5MatrixSharp)](https://www.nuget.org/packages/Pi5MatrixSharp/)
+[![License](https://img.shields.io/github/license/random-name-1234/Pi5MatrixSharp)](https://github.com/random-name-1234/Pi5MatrixSharp/blob/main/LICENSE)
 
 `Pi5MatrixSharp` is a C# wrapper for driving HUB75 RGB LED matrix panels on the Raspberry Pi 5 using Adafruit's Piomatter backend.
 
@@ -17,11 +24,7 @@ It is aimed at the "keep my app in C#" case: render however you like in managed 
 dotnet add package Pi5MatrixSharp
 ```
 
-Package page:
-
-```text
-https://www.nuget.org/packages/Pi5MatrixSharp/
-```
+Package page: <https://www.nuget.org/packages/Pi5MatrixSharp/>
 
 ## Quick Start
 
@@ -48,7 +51,7 @@ matrix.SetPixel(2, 0, 0, 0, 255);
 matrix.Show();
 ```
 
-For a runnable example, see `samples/Pi5MatrixSharp.Sample`.
+For a runnable example, see [samples/Pi5MatrixSharp.Sample](https://github.com/random-name-1234/Pi5MatrixSharp/tree/main/samples/Pi5MatrixSharp.Sample).
 
 ## Requirements
 
@@ -96,12 +99,12 @@ artifacts/nuget
 The intended release flow is:
 
 1. Build and test with `./scripts/pack.sh`
-2. Create a Git tag such as `v0.1.0-preview.1`
+2. Create a Git tag such as `v0.1.0`
 3. Publish a GitHub release and attach the generated `.nupkg`
 4. Push the same package to NuGet using the `NUGET_API_KEY` repo secret
 
 ## License
 
-This project is distributed under `GPL-2.0-only`. See `LICENSE`.
+This project is distributed under `GPL-2.0-only`. See [LICENSE](https://github.com/random-name-1234/Pi5MatrixSharp/blob/main/LICENSE).
 
-The bundled native backend is built on top of Adafruit's GPL-2.0-only Pi 5 Piomatter implementation. See `THIRD_PARTY_NOTICES.md`.
+The bundled native backend is built on top of Adafruit's GPL-2.0-only Pi 5 Piomatter implementation. See [THIRD_PARTY_NOTICES.md](https://github.com/random-name-1234/Pi5MatrixSharp/blob/main/THIRD_PARTY_NOTICES.md).

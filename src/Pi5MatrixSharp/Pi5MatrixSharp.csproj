@@ -9,16 +9,17 @@
     <RootNamespace>Pi5MatrixSharp</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>Pi5MatrixSharp</PackageId>
-    <Version>0.1.0-preview.1</Version>
+    <Version>0.1.0</Version>
     <Authors>Alan Smith</Authors>
-    <Description>C# bindings for driving HUB75 RGB matrix panels on Raspberry Pi 5 using Adafruit's Piomatter backend.</Description>
-    <PackageTags>raspberry-pi;raspberry-pi-5;hub75;led-matrix;piomatter</PackageTags>
+    <Description>C# bindings and bundled native runtime for driving HUB75 RGB LED matrix panels on Raspberry Pi 5 using Adafruit's Piomatter backend.</Description>
+    <PackageTags>raspberry-pi;raspberry-pi-5;hub75;led-matrix;matrix-display;piomatter;csharp;dotnet</PackageTags>
     <PackageLicenseExpression>GPL-2.0-only</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/random-name-1234/Pi5MatrixSharp</PackageProjectUrl>
     <RepositoryUrl>https://github.com/random-name-1234/Pi5MatrixSharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>Stable 0.1.0 release of the Raspberry Pi 5 HUB75 C# bindings with bundled linux-arm64 native runtime, sample app, and GitHub Actions packaging workflows.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
