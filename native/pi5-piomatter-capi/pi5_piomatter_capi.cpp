@@ -11,6 +11,9 @@
 
 #include "piomatter/piomatter.h"
 
+static_assert(sizeof(pi5_matrix_geometry_options) == 28,
+    "pi5_matrix_geometry_options must be 28 bytes to match C# InternalPi5MatrixGeometryOptions layout");
+
 struct pi5_matrix_handle {
     std::unique_ptr<piomatter::piomatter_base> matrix;
 };

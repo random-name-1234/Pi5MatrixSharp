@@ -44,6 +44,15 @@ public class Pi5MatrixOptionTests
     }
 
     [Fact]
+    public void NativeGeometryMappingSerpentineTrueIsOne()
+    {
+        var managed = new Pi5MatrixGeometryOptions { Serpentine = true };
+        var native = new InternalPi5MatrixGeometryOptions(managed);
+
+        Assert.Equal((byte)1, native.serpentine);
+    }
+
+    [Fact]
     public void MatrixOptionsDefaultToPackedRgbOnAdafruitBonnet()
     {
         var options = new Pi5MatrixOptions();
@@ -52,5 +61,34 @@ public class Pi5MatrixOptionTests
         Assert.Equal(Pi5MatrixPinout.AdafruitMatrixBonnet, options.Pinout);
         Assert.Equal(64, options.Geometry.Width);
         Assert.Equal(32, options.Geometry.Height);
+    }
+
+    [Theory]
+    [InlineData(Pi5MatrixOrientation.Normal, 0)]
+    [InlineData(Pi5MatrixOrientation.R180, 1)]
+    [InlineData(Pi5MatrixOrientation.Ccw, 2)]
+    [InlineData(Pi5MatrixOrientation.Cw, 3)]
+    public void OrientationEnumValuesMatchNativeConstants(Pi5MatrixOrientation orientation, int expected)
+    {
+        Assert.Equal(expected, (int)orientation);
+    }
+
+    [Theory]
+    [InlineData(Pi5Colorspace.Rgb565, 0)]
+    [InlineData(Pi5Colorspace.Rgb888, 1)]
+    [InlineData(Pi5Colorspace.Rgb888Packed, 2)]
+    public void ColorspaceEnumValuesMatchNativeConstants(Pi5Colorspace colorspace, int expected)
+    {
+        Assert.Equal(expected, (int)colorspace);
+    }
+
+    [Theory]
+    [InlineData(Pi5MatrixPinout.AdafruitMatrixBonnet, 0)]
+    [InlineData(Pi5MatrixPinout.AdafruitMatrixBonnetBgr, 1)]
+    [InlineData(Pi5MatrixPinout.Active3, 2)]
+    [InlineData(Pi5MatrixPinout.Active3Bgr, 3)]
+    public void PinoutEnumValuesMatchNativeConstants(Pi5MatrixPinout pinout, int expected)
+    {
+        Assert.Equal(expected, (int)pinout);
     }
 }

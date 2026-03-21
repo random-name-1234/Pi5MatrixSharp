@@ -1,26 +1,21 @@
 using Pi5MatrixSharp;
 
-var options = new Pi5MatrixOptions
-{
-    Pinout = Pi5MatrixPinout.AdafruitMatrixBonnet,
-    Geometry = new Pi5MatrixGeometryOptions
-    {
-        Width = 64,
-        Height = 32,
-        AddressLineCount = 4,
-        Serpentine = true,
-        Orientation = Pi5MatrixOrientation.Normal,
-        PlaneCount = 10,
-        TemporalPlaneCount = 2
-    }
-};
+// Use the factory for a common single-panel setup
+using var matrix = Pi5MatrixFactory.CreateSingle64x32();
 
-using var matrix = new Pi5Matrix(options);
+// Enable gamma correction for accurate colours on LED panels
+matrix.GammaCorrection = true;
+
+// Start at half brightness
+matrix.Brightness = 0.5f;
+
 Console.CancelKeyPress += (_, args) =>
 {
     args.Cancel = true;
     Environment.Exit(0);
 };
+
+Console.WriteLine(matrix);
 
 for (var frame = 0; ; frame++)
 {
@@ -34,5 +29,15 @@ for (var frame = 0; ; frame++)
     }
 
     matrix.Show();
+
+    // Print diagnostics every 100 frames
+    if (frame % 100 == 0 && frame > 0)
+    {
+        var diag = matrix.GetDiagnostics();
+        Console.WriteLine($"Frame {frame}: {diag.HardwareFps:F0}fps, " +
+                          $"show={diag.LastShowDurationMs:F2}ms, " +
+                          $"brightness={diag.Brightness:P0}");
+    }
+
     Thread.Sleep(33);
 }

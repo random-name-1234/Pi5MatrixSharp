@@ -31,6 +31,9 @@ typedef struct pi5_matrix_geometry_options {
     int height;
     int n_addr_lines;
     unsigned char serpentine;
+    unsigned char reserved0;
+    unsigned char reserved1;
+    unsigned char reserved2;
     int rotation;
     int n_planes;
     int n_temporal_planes;
