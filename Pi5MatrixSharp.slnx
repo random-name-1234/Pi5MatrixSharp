@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/samples/">
     <Project Path="samples/Pi5MatrixSharp.Sample/Pi5MatrixSharp.Sample.csproj" />
+    <Project Path="samples/Pi5MatrixSharp.Sample.Active3/Pi5MatrixSharp.Sample.Active3.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Pi5MatrixSharp/Pi5MatrixSharp.csproj" />

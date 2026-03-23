@@ -17,6 +17,8 @@ It is aimed at the "keep my app in C#" case: render however you like in managed 
 - Linux ARM64 only
 - Native backend bundled as `libpi5matrix.so`
 - Tested against Adafruit's `Adafruit_Blinka_Raspberry_Pi5_Piomatter` at commit `9ce4965a3fddf5b44c9da6c8dc3738cfe0403028`
+- Stable for the default 2-lane single-output path
+- Experimental for custom pixel maps and multi-lane `Active3`-style setups until validated on real triple-output hardware by this project
 
 ## Install
 
@@ -128,6 +130,38 @@ var diag = matrix.GetDiagnostics();
 Console.WriteLine($"Show count: {diag.ShowCount}, last show: {diag.LastShowDurationMs:F2}ms");
 ```
 
+You can also use that sample to smoke-test the experimental custom-map path on a normal 2-lane single-connector panel:
+
+```bash
+dotnet run --project samples/Pi5MatrixSharp.Sample -- --experimental-custom-map --frames=120
+```
+
+## Experimental Multi-Lane / Active3 Support
+
+`Pi5MatrixSharp` now exposes Piomatter's custom pixel-map geometry path. That makes it possible to model Adafruit's documented multi-lane `Active3` layout from C#.
+
+This support is currently marked experimental because it has been implemented against the upstream Piomatter API and examples, but has not yet been validated on real triple-output hardware by this project.
+
+```csharp
+using Pi5MatrixSharp;
+
+var options = new Pi5MatrixOptions
+{
+    Pinout = Pi5MatrixPinout.Active3,
+    Geometry = Pi5MatrixGeometryOptions.CreateSimpleMultilane(
+        width: 64,
+        height: 192,
+        addressLineCount: 5,
+        laneCount: 6,
+        planeCount: 10,
+        temporalPlaneCount: 4)
+};
+
+using var matrix = new Pi5Matrix(options);
+```
+
+For a runnable experimental example, see [samples/Pi5MatrixSharp.Sample.Active3](https://github.com/random-name-1234/Pi5MatrixSharp/tree/main/samples/Pi5MatrixSharp.Sample.Active3).
+
 ## Requirements
 
 - Raspberry Pi 5
@@ -174,7 +208,7 @@ artifacts/nuget
 The intended release flow is:
 
 1. Build and test with `./scripts/pack.sh`
-2. Create a Git tag such as `v0.1.0`
+2. Create a Git tag such as `v0.3.0-beta.1`
 3. Publish a GitHub release and attach the generated `.nupkg`
 4. Push the same package to NuGet using the `NUGET_API_KEY` repo secret
 

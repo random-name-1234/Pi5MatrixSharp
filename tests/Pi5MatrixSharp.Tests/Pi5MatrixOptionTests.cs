@@ -16,6 +16,8 @@ public class Pi5MatrixOptionTests
         Assert.Equal(Pi5MatrixOrientation.Normal, geometry.Orientation);
         Assert.Equal(10, geometry.PlaneCount);
         Assert.Equal(2, geometry.TemporalPlaneCount);
+        Assert.Equal(2, geometry.LaneCount);
+        Assert.Null(geometry.PixelMap);
     }
 
     [Fact]
@@ -29,10 +31,12 @@ public class Pi5MatrixOptionTests
             Serpentine = false,
             Orientation = Pi5MatrixOrientation.Ccw,
             PlaneCount = 11,
-            TemporalPlaneCount = 3
+            TemporalPlaneCount = 3,
+            LaneCount = 6,
+            PixelMap = [0, 1, 2]
         };
 
-        var native = new InternalPi5MatrixGeometryOptions(managed);
+        var native = new InternalPi5MatrixGeometryOptions(managed, (IntPtr)1234, 3);
 
         Assert.Equal(128, native.width);
         Assert.Equal(64, native.height);
@@ -41,6 +45,9 @@ public class Pi5MatrixOptionTests
         Assert.Equal((int)Pi5MatrixOrientation.Ccw, native.rotation);
         Assert.Equal(11, native.n_planes);
         Assert.Equal(3, native.n_temporal_planes);
+        Assert.Equal((nuint)6, native.n_lanes);
+        Assert.Equal((nuint)3, native.pixel_map_length);
+        Assert.Equal((IntPtr)1234, native.pixel_map);
     }
 
     [Fact]
@@ -90,5 +97,50 @@ public class Pi5MatrixOptionTests
     public void PinoutEnumValuesMatchNativeConstants(Pi5MatrixPinout pinout, int expected)
     {
         Assert.Equal(expected, (int)pinout);
+    }
+
+    [Fact]
+    public void SimpleMultilaneMapperMatchesAdafruitLayout()
+    {
+        var map = Pi5MatrixPixelMappers.SimpleMultilane(
+            width: 2,
+            height: 4,
+            addressLineCount: 1,
+            laneCount: 2);
+
+        Assert.Equal([0, 4, 1, 5, 2, 6, 3, 7], map);
+    }
+
+    [Fact]
+    public void CreateSimpleMultilaneBuildsExperimentalGeometry()
+    {
+        var geometry = Pi5MatrixGeometryOptions.CreateSimpleMultilane(
+            width: 64,
+            height: 192,
+            addressLineCount: 5,
+            laneCount: 6,
+            temporalPlaneCount: 4);
+
+        Assert.Equal(64, geometry.Width);
+        Assert.Equal(192, geometry.Height);
+        Assert.Equal(6, geometry.LaneCount);
+        Assert.False(geometry.Serpentine);
+        Assert.Equal(Pi5MatrixOrientation.Normal, geometry.Orientation);
+        Assert.Equal(4, geometry.TemporalPlaneCount);
+        Assert.NotNull(geometry.PixelMap);
+        Assert.Equal(64 * 192, geometry.PixelMap!.Length);
+    }
+
+    [Fact]
+    public void SimpleMultilaneRejectsMismatchedHeight()
+    {
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            Pi5MatrixPixelMappers.SimpleMultilane(
+                width: 64,
+                height: 32,
+                addressLineCount: 5,
+                laneCount: 6));
+
+        Assert.Contains("does not match", ex.Message);
     }
 }

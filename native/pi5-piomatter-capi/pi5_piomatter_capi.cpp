@@ -4,10 +4,12 @@
 #include <cmath>
 #include <cstring>
 #include <memory>
+#include <iterator>
 #include <new>
 #include <span>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "piomatter/piomatter.h"
 
@@ -64,8 +66,53 @@ piomatter::matrix_geometry make_geometry(const pi5_matrix_geometry_options &opti
     const size_t width = static_cast<size_t>(options.width);
     const size_t height = static_cast<size_t>(options.height);
     const size_t n_addr_lines = static_cast<size_t>(options.n_addr_lines);
-    const size_t n_lines = 2u << n_addr_lines;
     const size_t total_pixels = width * height;
+    const size_t n_lanes = options.n_lanes == 0 ? 2u : options.n_lanes;
+
+    if (options.pixel_map_length > 0) {
+        if (options.pixel_map == nullptr) {
+            throw std::invalid_argument("pixel_map must not be null when pixel_map_length is non-zero");
+        }
+        if (to_orientation(options.rotation) != piomatter::orientation::normal) {
+            throw std::invalid_argument("custom pixel maps currently require normal orientation");
+        }
+        if (options.pixel_map_length != total_pixels) {
+            throw std::invalid_argument("pixel_map_length must contain one entry per framebuffer pixel");
+        }
+
+        const size_t n_lines = n_lanes << n_addr_lines;
+        if ((total_pixels % n_lines) != 0) {
+            throw std::invalid_argument(
+                "width * height must be divisible by lane count << address lines for custom pixel maps");
+        }
+
+        piomatter::matrix_map pixel_map(
+            options.pixel_map,
+            options.pixel_map + options.pixel_map_length);
+        for (const int pixel_index : pixel_map) {
+            if (pixel_index < 0 || static_cast<size_t>(pixel_index) >= total_pixels) {
+                throw std::invalid_argument("pixel_map contains an out-of-range pixel index");
+            }
+        }
+
+        const size_t pixels_across = total_pixels / n_lines;
+        return piomatter::matrix_geometry(
+            pixels_across,
+            n_addr_lines,
+            options.n_planes,
+            options.n_temporal_planes,
+            width,
+            height,
+            std::move(pixel_map),
+            n_lanes);
+    }
+
+    if (n_lanes != 2u) {
+        throw std::invalid_argument(
+            "lane counts above 2 require a custom pixel map");
+    }
+
+    const size_t n_lines = 2u << n_addr_lines;
     if ((total_pixels % n_lines) != 0) {
         throw std::invalid_argument(
             "width * height must be divisible by the number of addressed row pairs");
@@ -142,6 +189,11 @@ std::unique_ptr<piomatter::piomatter_base> make_matrix_instance(
     const void *framebuffer,
     size_t framebuffer_size,
     const piomatter::matrix_geometry &geometry) {
+    if (geometry.n_lanes * 3u > std::size(TPinout::PIN_RGB)) {
+        throw std::invalid_argument(
+            "geometry lane count exceeds the selected pinout capacity");
+    }
+
     auto span = make_framebuffer_span<TColorspace>(
         framebuffer,
         framebuffer_size,

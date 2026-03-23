@@ -37,6 +37,9 @@ typedef struct pi5_matrix_geometry_options {
     int rotation;
     int n_planes;
     int n_temporal_planes;
+    size_t n_lanes;
+    size_t pixel_map_length;
+    const int *pixel_map;
 } pi5_matrix_geometry_options;
 
 typedef struct pi5_matrix_handle pi5_matrix_handle;

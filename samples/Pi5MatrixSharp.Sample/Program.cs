@@ -1,14 +1,42 @@
 using Pi5MatrixSharp;
 
-// Use the factory for a common single-panel setup
-using var matrix = Pi5MatrixFactory.CreateSingle64x32();
+var useExperimentalCustomMap = args.Contains("--experimental-custom-map", StringComparer.OrdinalIgnoreCase);
+var frameLimit = args
+    .Select(static arg => arg.Split('=', 2))
+    .Where(static parts => parts.Length == 2 && parts[0].Equals("--frames", StringComparison.OrdinalIgnoreCase))
+    .Select(static parts => int.TryParse(parts[1], out var value) ? value : (int?)null)
+    .FirstOrDefault(static value => value.HasValue);
 
-// Enable gamma correction for accurate colours on LED panels
+var options = new Pi5MatrixOptions
+{
+    Pinout = Pi5MatrixPinout.AdafruitMatrixBonnet,
+    Geometry = useExperimentalCustomMap
+        ? Pi5MatrixGeometryOptions.CreateSimpleMultilane(
+            width: 64,
+            height: 32,
+            addressLineCount: 4,
+            laneCount: 2,
+            planeCount: 10,
+            temporalPlaneCount: 2)
+        : new Pi5MatrixGeometryOptions
+        {
+            Width = 64,
+            Height = 32,
+            AddressLineCount = 4,
+            Serpentine = true,
+            Orientation = Pi5MatrixOrientation.Normal,
+            PlaneCount = 10,
+            TemporalPlaneCount = 2
+        }
+};
+
+using var matrix = new Pi5Matrix(options);
+Console.WriteLine(useExperimentalCustomMap
+    ? "Running sample with experimental custom-map geometry."
+    : "Running sample with stable simple geometry.");
+
 matrix.GammaCorrection = true;
-
-// Start at half brightness
 matrix.Brightness = 0.5f;
-
 Console.CancelKeyPress += (_, args) =>
 {
     args.Cancel = true;
@@ -16,8 +44,7 @@ Console.CancelKeyPress += (_, args) =>
 };
 
 Console.WriteLine(matrix);
-
-for (var frame = 0; ; frame++)
+for (var frame = 0; !frameLimit.HasValue || frame < frameLimit.Value; frame++)
 {
     for (var y = 0; y < matrix.Height; y++)
     for (var x = 0; x < matrix.Width; x++)

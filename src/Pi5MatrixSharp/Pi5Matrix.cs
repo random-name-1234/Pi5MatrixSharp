@@ -33,8 +33,7 @@ public sealed class Pi5Matrix : IDisposable
     public Pi5Matrix(Pi5MatrixOptions options)
     {
         Options = options;
-
-        var geometry = new InternalPi5MatrixGeometryOptions(options.Geometry);
+        ValidateGeometryOptions(options.Geometry);
         var expectedSize = checked((int)Pi5Bindings.pi5_matrix_expected_framebuffer_size(
             (int)options.Colorspace,
             options.Geometry.Width,
@@ -47,18 +46,41 @@ public sealed class Pi5Matrix : IDisposable
         frontBuffer = new byte[expectedSize];
         pinnedFrontBuffer = GCHandle.Alloc(frontBuffer, GCHandleType.Pinned);
 
-        handle = Pi5Bindings.pi5_matrix_create_from_buffer(
-            (int)options.Colorspace,
-            (int)options.Pinout,
-            pinnedFrontBuffer.AddrOfPinnedObject(),
-            (nuint)frontBuffer.Length,
-            ref geometry);
-
-        if (handle == IntPtr.Zero)
+        GCHandle pinnedPixelMap = default;
+        try
         {
-            pinnedFrontBuffer.Free();
-            throw new InvalidOperationException(
-                $"Failed to create Pi 5 matrix: {Pi5Bindings.GetLastErrorMessage()}");
+            var pixelMapPointer = IntPtr.Zero;
+            nuint pixelMapLength = 0;
+            if (options.Geometry.PixelMap is { Length: > 0 } pixelMap)
+            {
+                pinnedPixelMap = GCHandle.Alloc(pixelMap, GCHandleType.Pinned);
+                pixelMapPointer = pinnedPixelMap.AddrOfPinnedObject();
+                pixelMapLength = checked((nuint)pixelMap.Length);
+            }
+
+            var geometry = new InternalPi5MatrixGeometryOptions(
+                options.Geometry,
+                pixelMapPointer,
+                pixelMapLength);
+
+            handle = Pi5Bindings.pi5_matrix_create_from_buffer(
+                (int)options.Colorspace,
+                (int)options.Pinout,
+                pinnedFrontBuffer.AddrOfPinnedObject(),
+                (nuint)frontBuffer.Length,
+                ref geometry);
+
+            if (handle == IntPtr.Zero)
+            {
+                pinnedFrontBuffer.Free();
+                throw new InvalidOperationException(
+                    $"Failed to create Pi 5 matrix: {Pi5Bindings.GetLastErrorMessage()}");
+            }
+        }
+        finally
+        {
+            if (pinnedPixelMap.IsAllocated)
+                pinnedPixelMap.Free();
         }
     }
 
@@ -297,6 +319,63 @@ public sealed class Pi5Matrix : IDisposable
         if (disposed)
             throw new ObjectDisposedException(nameof(Pi5Matrix));
 #endif
+    }
+
+    private static void ValidateGeometryOptions(Pi5MatrixGeometryOptions geometry)
+    {
+        if (geometry.LaneCount <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(geometry),
+                "LaneCount must be positive.");
+        }
+
+        var hasPixelMap = geometry.PixelMap is { Length: > 0 };
+        if (!hasPixelMap)
+        {
+            if (geometry.LaneCount != 2)
+            {
+                throw new ArgumentException(
+                    "LaneCount values other than 2 require a custom PixelMap. Use Pi5MatrixPixelMappers.SimpleMultilane(...) for Adafruit's documented multi-lane layout.",
+                    nameof(geometry));
+            }
+
+            return;
+        }
+
+        if (geometry.Orientation != Pi5MatrixOrientation.Normal)
+        {
+            throw new ArgumentException(
+                "Custom PixelMap configurations currently require Orientation.Normal. Encode rotation directly in the pixel map.",
+                nameof(geometry));
+        }
+
+        var totalPixels = checked(geometry.Width * geometry.Height);
+        var pixelMap = geometry.PixelMap!;
+        if (pixelMap.Length != totalPixels)
+        {
+            throw new ArgumentException(
+                "Custom PixelMap configurations must contain one entry per framebuffer pixel.",
+                nameof(geometry));
+        }
+
+        var nLines = checked(geometry.LaneCount << geometry.AddressLineCount);
+        if (totalPixels % nLines != 0)
+        {
+            throw new ArgumentException(
+                "Width * Height must be divisible by LaneCount << AddressLineCount for custom pixel maps.",
+                nameof(geometry));
+        }
+
+        foreach (var pixelIndex in pixelMap)
+        {
+            if ((uint)pixelIndex >= (uint)totalPixels)
+            {
+                throw new ArgumentException(
+                    "Custom PixelMap entries must fall within the framebuffer bounds.",
+                    nameof(geometry));
+            }
+        }
     }
 
     private void Dispose(bool disposing)
