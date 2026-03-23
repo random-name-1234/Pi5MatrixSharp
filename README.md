@@ -142,6 +142,17 @@ dotnet run --project samples/Pi5MatrixSharp.Sample -- --experimental-custom-map 
 
 This support is currently marked experimental because it has been implemented against the upstream Piomatter API and examples, but has not yet been validated on real triple-output hardware by this project.
 
+What has been validated so far:
+
+- Real Pi 5 hardware with a single 64x32 2-lane panel
+- Stable simple geometry path
+- Experimental custom-map geometry path using the same panel and pinout
+
+What remains unvalidated:
+
+- True `Active3` / triple-output hardware
+- Higher-lane custom maps beyond the single-panel 2-lane compatibility check
+
 ```csharp
 using Pi5MatrixSharp;
 
